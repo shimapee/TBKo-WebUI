@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<title>てぃび子と遊ぼう！</title>
+<!-- IE互換 -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<!-- 文字コード -->
+<meta charset="UTF-8">
+
+<!-- モバイル対応 -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- CSS -->
+<style type="text/css">
+.header {
+	background: #1f3134;
+	padding: 20px;
+}
+.header p {
+	color: #fff;
+	margin-left: 10px;
+	font-size: 1.3em;
+	font-family: meiryo;
+}
+.talkarea {
+	height: 500px;
+	background: #7897C5;
+	overflow-y: scroll;
+}
+.messagearea {
+	height: 100px;
+	background: #1f3134;
+	text-align: center;
+}
+#msgtxt {
+	border: 0;
+	padding: 5px;
+	font-size: 1.3em;
+	font-family: meiryo;
+	color: #aaa;
+	border: solid 1px #ccc;
+	margin: 20px 0 20px 20px;
+	width: 300px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.tbko_image{
+	margin-right: 10px;
+	float: left;
+	width:7%;
+}
+
+#sendmessage {
+	padding: 10px;
+	border-radius: 3px;
+	font-size: 0.7em;
+	font-family: meiryo;
+}
+
+/* http://nelog.jp/line-bolloon-css より… */
+/*******************************
+* 左からの吹き出し
+********************************/
+.left_balloon {
+    position: relative;
+    background: #fff;
+    border: 1px solid #777;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    margin-right: 20%;
+    clear: both;
+    max-width: 500px;
+    float: left;
+}
+.left_balloon:after,
+.left_balloon:before {
+    right: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.left_balloon:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-right-color: #fff;
+    border-width: 7px;
+    margin-top: -7px;
+}
+.left_balloon:before {
+    border-color: rgba(0, 0, 0, 0);
+    border-right-color: #000;
+    border-width: 8px;
+    margin-top: -8px;
+}
+
+/*******************************
+* 右からの吹き出し
+********************************/
+.right_balloon {
+    position: relative;
+    background: #85e249;
+    border: 1px solid #777;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    margin-left: 20%;
+    clear: both;
+    max-width: 500px;
+    float: right;
+}
+.right_balloon:after,
+.right_balloon:before {
+    left: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.right_balloon:after {
+    border-color: rgba(133, 226, 73, 0);
+    border-left-color: #85e249;
+    border-width: 7px;
+    margin-top: -7px;
+}
+.right_balloon:before {
+    border-color: rgba(119, 119, 119, 0);
+    border-left-color: #777;
+    border-width: 8px;
+    margin-top: -8px;
+}
+
+/*******************************
+* 割り込みを解除
+********************************/
+.clear_balloon{
+  clear: both;
+}
+</style>
+</head>
+<body>
+<div class="container">
+	<div class="header">
+	<img class="tbko_image" src="tbko.png">
+	<p>てぃび子</p>
+	</div>
+	<div class="talkarea">
+
+	</div>
+	<div class="messagearea">
+		<input type="text" id="msgtxt">
+		<input type="hidden" id="mode" value="">
+		<input type="hidden" id="context" value="">
+		<button id="sendmessage">送信</button>
+	</div>
+</div>
+</body>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script>
+$(function(){
+	const apikey = "3152594247464f4c6e595a316f485450753237637358437778774268686a3867337077782f705765614434";
+	const baseurl = "https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue";
+	const q_param = "APIKEY";
+
+	$("#sendmessage").on('click', function(){
+		var msg = $("#msgtxt").val();
+		console.log(msg);
+		if(msg == null) {
+			alert("何か入力してください。");
+			return;
+		} else {
+			$(".talkarea").append("<p class='right_balloon'>"+msg+"</P>");
+			var mode = $("#mode").val();
+			if(mode == null) {
+				mode = "dialog";
+			}
+			var context = $("#context").val();
+			console.log(context);
+			var req_data = {
+				utt: msg,
+				mode: mode,
+				context: context,
+				t: 20
+			};
+			var dat = JSON.stringify(req_data);
+			$.ajax({
+				type: "post",
+				url: baseurl+"?"+q_param+"="+apikey,
+				data: dat,
+				contentType: "application/json",
+				dataType: "JSON"
+			})
+			.done(function(data){
+				var tbkotalk = data.utt;
+				var tbkomode = data.mode;
+				var tbkocontext = data.context;
+				$(".talkarea").append("<p class='left_balloon'>"+tbkotalk+"</P>");
+				$("#mode").val(tbkomode);
+				$("#context").val(tbkocontext);
+				$("#msgtxt").val("");
+				$('.talkarea').animate({scrollTop: $('.talkarea')[0].scrollHeight}, 'fast');
+			});
+		}
+
+	});
+
+});
+</script>
+</html>
